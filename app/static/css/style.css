@@ -1,99 +1,211 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-
 :root {
-  --primary: #6366f1;
-  --secondary: #ec4899;
-  --background-start: #0f172a;
-  --background-end: #1e293b;
-  --text-primary: #f8fafc;
-  --text-muted: #cbd5e1;
-  --glass-bg: rgba(255, 255, 255, 0.05);
-  --glass-border: rgba(255, 255, 255, 0.1);
+    --bg-color: #0f172a;
+    --text-color: #f8fafc;
+    --glass-bg: rgba(30, 41, 59, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --primary-color: #3b82f6;
+    --primary-hover: #2563eb;
+    --accent-color: #10b981;
+    --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 }
 
 body {
-    font-family: 'Inter', sans-serif;
-    background: linear-gradient(135deg, var(--background-start), var(--background-end));
-    color: var(--text-primary);
+    background-color: var(--bg-color);
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.15) 0px, transparent 50%);
+    background-attachment: fixed;
+    color: var(--text-color);
+    font-family: 'Outfit', 'Noto Sans TC', sans-serif;
     min-height: 100vh;
 }
 
-/* Glassmorphism utilities */
-.glass-card {
-    background: var(--glass-bg);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    border: 1px solid var(--glass-border);
-    border-radius: 20px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.glass-card-hover:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 35px rgba(0,0,0,0.4);
-}
-
-/* Navbar */
-.navbar-glass {
-    background: rgba(15, 23, 42, 0.7) !important;
-    backdrop-filter: blur(20px);
+/* Glassmorphism Navigation */
+.glass-nav {
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--glass-border);
 }
 
-.navbar-brand {
-    font-weight: 700;
-    font-size: 1.5rem;
-    background: linear-gradient(to right, var(--primary), var(--secondary));
+.brand-text {
+    background: linear-gradient(135deg, #60a5fa, #34d399);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    font-size: 1.6rem;
+    letter-spacing: -0.5px;
 }
 
-/* Forms overrides for dark mode */
-.form-control, .form-control:focus {
-    background: rgba(0, 0, 0, 0.2);
+.nav-link {
+    color: #cbd5e1 !important;
+    font-weight: 500;
+    font-size: 1.1rem;
+    transition: color 0.3s ease;
+}
+.nav-link:hover {
+    color: var(--text-color) !important;
+}
+
+/* Premium Buttons */
+.premium-btn {
+    background: linear-gradient(135deg, var(--primary-color), #8b5cf6);
+    border: none;
+    border-radius: 50px;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+    transition: all 0.3s ease;
+}
+.premium-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
+}
+
+/* Form Styles */
+.glass-form {
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    border-radius: 24px;
+    padding: 2.5rem;
     border: 1px solid var(--glass-border);
-    color: var(--text-primary);
+    box-shadow: var(--card-shadow);
+}
+.form-control, .form-select {
+    background: rgba(0,0,0,0.2) !important;
+    border: 1px solid var(--glass-border) !important;
+    color: white !important;
     border-radius: 12px;
 }
-.form-control::placeholder {
-    color: rgba(255, 255, 255, 0.3);
+.form-control:focus, .form-select:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3) !important;
+    border-color: var(--primary-color) !important;
 }
-
-/* Fancy Buttons */
-.btn-gradient {
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    border: none;
-    color: white;
+.form-label {
     font-weight: 600;
+    color: #e2e8f0;
+}
+.dynamic-row {
+    background: rgba(0,0,0,0.1);
+    padding: 1.25rem;
+    border-radius: 16px;
+    margin-bottom: 1rem;
+    border: 1px dashed rgba(255,255,255,0.15);
     transition: all 0.3s ease;
 }
-.btn-gradient:hover {
-    box-shadow: 0 5px 15px rgba(236, 72, 153, 0.4);
-    transform: translateY(-2px);
-    color: white;
+.dynamic-row:hover {
+    border-color: rgba(255,255,255,0.3);
+    background: rgba(0,0,0,0.2);
 }
 
-.btn-outline-glass {
-    border: 1px solid var(--glass-border);
-    color: var(--text-primary);
-    background: transparent;
-    transition: all 0.3s ease;
-}
-.btn-outline-glass:hover {
-    background: var(--glass-bg);
-    color: white;
-}
-
-/* Text styles */
 .text-gradient {
-    background: linear-gradient(to right, var(--primary), #a855f7);
+    background: linear-gradient(to right, #60a5fa, #a78bfa);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
-/* Badges */
-.badge-glass {
-    background: rgba(99, 102, 241, 0.15);
-    border: 1px solid rgba(99, 102, 241, 0.4);
-    color: #c7d2fe;
+/* Cards */
+.recipe-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: var(--card-shadow);
+    color: white;
+}
+.recipe-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+.recipe-img-container {
+    height: 220px;
+    overflow: hidden;
+    position: relative;
+}
+.recipe-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+.recipe-card:hover .recipe-img {
+    transform: scale(1.05);
+}
+.recipe-img-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, #1e293b, #334155);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+}
+.category-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+.card-body-custom {
+    padding: 1.5rem;
+}
+.recipe-title {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    font-size: 1.4rem;
+}
+
+/* Detail View */
+.detail-header {
+    background: var(--glass-bg);
+    border-radius: 24px;
+    padding: 2.5rem;
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--card-shadow);
+}
+.detail-img {
+    border-radius: 16px;
+    max-height: 400px;
+    width: 100%;
+    object-fit: cover;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+.ingredient-list {
+    list-style: none;
+    padding: 0;
+}
+.ingredient-item {
+    background: rgba(255,255,255,0.05);
+    margin-bottom: 10px;
+    padding: 14px 20px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    border: 1px solid transparent;
+    transition: border-color 0.3s ease;
+}
+.ingredient-item:hover {
+    border-color: rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.1);
+}
+.step-card {
+    background: rgba(30, 41, 59, 0.4);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    border-left: 4px solid var(--primary-color);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+.step-number {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: rgba(255,255,255,0.1);
+    float: right;
+    line-height: 0.8;
 }

@@ -1,10 +1,8 @@
 .venv/
 __pycache__/
+instance/
+.env
 *.pyc
 *.pyo
-__pypackages__/
-instance/
-*.db
-*.sqlite3
-.env
-.flaskenv
+app/static/uploads/*
+!app/static/uploads/.gitkeep

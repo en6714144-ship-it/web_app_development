@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}編輯 - {{ recipe.title }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center mt-4 mb-5">
+    <div class="col-lg-8">
+        <div class="glass-form">
+            <h2 class="mb-4 fw-bold text-gradient">✏️ 編輯食譜資訊</h2>
+            
+            <div class="alert alert-warning bg-transparent border-warning text-warning mb-4 shadow" role="alert">
+                <strong>特別注意事項：</strong>目前的編輯器只能針對食譜的基本屬性做修改，若要變更詳細的食材與對應步驟圖文，建議先透過新建立一篇新的來代替！
+            </div>
+            
+            <form action="{{ url_for('recipe.edit_submit', recipe_id=recipe.id) }}" method="POST" enctype="multipart/form-data">
+                
+                <div class="row mb-4">
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label text-light fw-bold fs-5">食譜名稱 <span class="text-danger">*</span></label>
+                        <input type="text" name="title" class="form-control form-control-lg" value="{{ recipe.title }}" required>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label text-light fw-bold fs-5">料理分類 <span class="text-danger">*</span></label>
+                        <select name="category" class="form-select form-select-lg" required>
+                            <option value="中式" {% if recipe.category == '中式' %}selected{% endif %}>中式</option>
+                            <option value="西式" {% if recipe.category == '西式' %}selected{% endif %}>西式</option>
+                            <option value="日式" {% if recipe.category == '日式' %}selected{% endif %}>日式</option>
+                            <option value="台式" {% if recipe.category == '台式' %}selected{% endif %}>台式</option>
+                            <option value="甜點" {% if recipe.category == '甜點' %}selected{% endif %}>甜點</option>
+                            <option value="其他" {% if recipe.category == '其他' %}selected{% endif %}>其他</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label text-light fw-bold fs-5">預估烹飪時間 (分鐘) <span class="text-danger">*</span></label>
+                        <input type="number" name="prep_time" class="form-control form-control-lg" value="{{ recipe.prep_time }}" required>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label text-light fw-bold fs-5">更新食譜預覽圖</label>
+                        <input type="file" name="image" class="form-control form-control-lg" accept="image/*">
+                        <div class="form-text text-info mt-2">※ 若不需要換圖片請維持空白。若上傳新圖片則會自動覆蓋舊有的檔案。</div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between mt-5 gap-3">
+                    <a href="{{ url_for('recipe.detail', recipe_id=recipe.id) }}" class="btn btn-outline-light rounded-pill px-5 py-2 fs-5">返回</a>
+                    <button type="submit" class="btn btn-primary premium-btn py-2 px-5 fs-5">確認修改</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

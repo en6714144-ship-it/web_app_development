@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}首頁 - 智慧食譜{% endblock %}
+{% block content %}
+<div class="row mb-5 align-items-center">
+    <div class="col-md-6 mt-4">
+        <h1 class="display-4 fw-bold text-gradient">探索美味食譜</h1>
+        <p class="lead text-secondary">發掘、分享、並有系統地收藏您的專屬料理筆記。</p>
+    </div>
+    <div class="col-md-6 mt-4 text-md-end">
+        <div class="d-inline-flex gap-2 flex-wrap">
+            <a href="{{ url_for('index.home') }}" class="btn btn-sm {% if not current_category %}btn-light{% else %}btn-outline-light{% endif %} rounded-pill px-3 py-2">全部分類</a>
+            <a href="{{ url_for('index.home', category='中式') }}" class="btn btn-sm {% if current_category == '中式' %}btn-light{% else %}btn-outline-light{% endif %} rounded-pill px-3 py-2">中式料理</a>
+            <a href="{{ url_for('index.home', category='西式') }}" class="btn btn-sm {% if current_category == '西式' %}btn-light{% else %}btn-outline-light{% endif %} rounded-pill px-3 py-2">西式風味</a>
+            <a href="{{ url_for('index.home', category='甜點') }}" class="btn btn-sm {% if current_category == '甜點' %}btn-light{% else %}btn-outline-light{% endif %} rounded-pill px-3 py-2">精緻甜點</a>
+        </div>
+    </div>
+</div>
+
+{% if not recipes %}
+<div class="text-center py-5 my-5 glass-form">
+    <div class="display-1 text-muted mb-3" style="opacity: 0.5;">🍽️</div>
+    <h3 class="fw-bold">這個分類還沒有食譜喔！</h3>
+    <p class="text-secondary">點擊右上角新增您的第一筆食譜吧！</p>
+</div>
+{% else %}
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    {% for recipe in recipes %}
+    <div class="col">
+        <a href="{{ url_for('recipe.detail', recipe_id=recipe.id) }}" class="text-decoration-none">
+            <div class="recipe-card h-100">
+                <div class="recipe-img-container">
+                    <span class="category-badge">{{ recipe.category }}</span>
+                    {% if recipe.image_path %}
+                        <img src="{{ url_for('static', filename='uploads/' ~ recipe.image_path) }}" class="recipe-img" alt="{{ recipe.title }}">
+                    {% else %}
+                        <div class="recipe-img-placeholder">🍲</div>
+                    {% endif %}
+                </div>
+                <div class="card-body-custom">
+                    <h3 class="recipe-title">{{ recipe.title }}</h3>
+                    <div class="recipe-meta">
+                        <span>⏱️ 烹飪時間 {{ recipe.prep_time }} 分鐘</span>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

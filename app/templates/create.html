@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}新增食譜{% endblock %}
+{% block content %}
+<div class="row justify-content-center mt-4 mb-5">
+    <div class="col-lg-8">
+        <div class="glass-form">
+            <h2 class="mb-4 fw-bold text-gradient">✨ 撰寫新食譜</h2>
+            <form action="{{ url_for('recipe.create_submit') }}" method="POST" enctype="multipart/form-data">
+                
+                <div class="row mb-4">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">食譜名稱 <span class="text-danger">*</span></label>
+                        <input type="text" name="title" class="form-control" required placeholder="如：家常黑豬肉滷肉飯">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">料理分類 <span class="text-danger">*</span></label>
+                        <select name="category" class="form-select" required>
+                            <option value="">選擇分類...</option>
+                            <option value="中式">中式</option>
+                            <option value="西式">西式</option>
+                            <option value="日式">日式</option>
+                            <option value="台式">台式</option>
+                            <option value="甜點">甜點</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">預估烹調時間 (分鐘) <span class="text-danger">*</span></label>
+                        <input type="number" name="prep_time" class="form-control" required placeholder="如：45">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">完成品照片</label>
+                        <input type="file" name="image" class="form-control" accept="image/*">
+                    </div>
+                </div>
+
+                <hr class="border-secondary my-4 opacity-25">
+
+                <h4 class="mb-3 text-info fw-bold">🛒 食材與材料清單</h4>
+                <div id="ingredients-container">
+                    <!-- 第一個預設材料框 -->
+                    <div class="row dynamic-row ingredient-row align-items-center">
+                        <div class="col-7">
+                            <input type="text" name="ingredient_name[]" class="form-control" placeholder="食材名稱 (如: 五花肉)" required>
+                        </div>
+                        <div class="col-4">
+                            <input type="text" name="ingredient_amount[]" class="form-control" placeholder="份量 (如: 600g)" required>
+                        </div>
+                        <div class="col-1">
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-outline-info rounded-pill px-3 mt-2" onclick="addIngredient()">+ 增加多樣食材</button>
+
+                <hr class="border-secondary my-4 opacity-25">
+
+                <h4 class="mb-3 text-info fw-bold">🍳 分步烹飪料理教學</h4>
+                <div id="steps-container">
+                    <!-- 預設步驟一 -->
+                    <div class="dynamic-row step-row">
+                        <div class="d-flex justify-content-between mb-2">
+                            <strong class="step-badge text-warning fs-5">步驟 1</strong>
+                        </div>
+                        <textarea name="step_description[]" class="form-control mb-3" rows="2" placeholder="詳細說明此步驟的下鍋方法或備註..." required></textarea>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text border-0 text-white" style="background: rgba(0,0,0,0.3);">上傳步驟預覽圖</span>
+                            <input type="file" name="step_image[]" class="form-control" accept="image/*">
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-outline-warning rounded-pill px-3 mt-2" onclick="addStep()">+ 增加下一步骤</button>
+
+                <div class="d-grid mt-5">
+                    <button type="submit" class="btn btn-primary premium-btn py-3 fs-5">完成並發佈食譜 🚀</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function addIngredient() {
+        const container = document.getElementById('ingredients-container');
+        const row = document.createElement('div');
+        row.className = 'row dynamic-row ingredient-row mt-3 align-items-center';
+        row.innerHTML = `
+            <div class="col-7">
+                <input type="text" name="ingredient_name[]" class="form-control" placeholder="食材名稱" required>
+            </div>
+            <div class="col-4">
+                <input type="text" name="ingredient_amount[]" class="form-control" placeholder="份量" required>
+            </div>
+            <div class="col-1 text-center">
+                <button type="button" class="btn btn-danger btn-sm rounded-circle px-2 text-white" onclick="this.closest('.row').remove()" style="opacity:0.8;">X</button>
+            </div>
+        `;
+        container.appendChild(row);
+    }
+
+    function addStep() {
+        const container = document.getElementById('steps-container');
+        const count = container.querySelectorAll('.step-row').length + 1;
+        const row = document.createElement('div');
+        row.className = 'dynamic-row step-row mt-3';
+        row.innerHTML = `
+            <div class="d-flex justify-content-between mb-2">
+                <strong class="step-badge text-warning fs-5">步驟 ${count}</strong>
+                <button type="button" class="btn btn-danger btn-sm rounded-circle px-2 text-white" onclick="this.closest('.step-row').remove()" style="opacity:0.8;">X</button>
+            </div>
+            <textarea name="step_description[]" class="form-control mb-3" rows="2" placeholder="詳細說明此步驟的下鍋方法或備註..." required></textarea>
+            <div class="input-group input-group-sm">
+                <span class="input-group-text border-0 text-white" style="background: rgba(0,0,0,0.3);">上傳步驟預覽圖</span>
+                <input type="file" name="step_image[]" class="form-control" accept="image/*">
+            </div>
+        `;
+        container.appendChild(row);
+    }
+</script>
+{% endblock %}

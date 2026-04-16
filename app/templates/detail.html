@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}{{ recipe.title }} - 智慧食譜{% endblock %}
+{% block content %}
+<div class="detail-header mt-4">
+    <div class="row align-items-center">
+        <div class="col-lg-5 mb-4 mb-lg-0">
+            {% if recipe.image_path %}
+                <img src="{{ url_for('static', filename='uploads/' ~ recipe.image_path) }}" class="detail-img" alt="{{ recipe.title }}">
+            {% else %}
+                <div class="detail-img d-flex align-items-center justify-content-center border border-secondary" style="background: rgba(30,41,59,0.5); font-size:5rem;">🍽️</div>
+            {% endif %}
+        </div>
+        <div class="col-lg-7 px-lg-4">
+            <span class="badge bg-primary mb-3 fs-6 rounded-pill px-3 py-2 bg-gradient shadow">{{ recipe.category }}</span>
+            <h1 class="display-3 fw-bold mb-3 text-white">{{ recipe.title }}</h1>
+            <div class="d-flex align-items-center fs-5 text-secondary mb-4">
+                <span>⏱️ 烹飪預估時間： <strong class="text-white fs-4 ms-1">{{ recipe.prep_time }}</strong> 分鐘</span>
+            </div>
+            
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('recipe.edit_page', recipe_id=recipe.id) }}" class="btn btn-outline-light rounded-pill px-4">✏️ 編輯基本資訊</a>
+                <form action="{{ url_for('recipe.delete_submit', recipe_id=recipe.id) }}" method="POST" onsubmit="return confirm('您確定要刪除這道精心記錄的食譜嗎？\n(刪除後將無法恢復喔！)');">
+                    <button type="submit" class="btn btn-outline-danger rounded-pill px-4">🗑️ 刪除</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-4 mb-4">
+        <div class="glass-form h-100">
+            <h3 class="mb-4 text-gradient fw-bold">📋 食譜必備食材</h3>
+            <ul class="ingredient-list">
+                {% for ing in recipe.ingredients %}
+                <li class="ingredient-item fs-5">
+                    <span class="fw-bold text-light">{{ ing.name }}</span>
+                    <span class="text-info fw-bold">{{ ing.amount }}</span>
+                </li>
+                {% endfor %}
+                {% if not recipe.ingredients %}
+                <li class="text-muted">本食譜沒有登錄任何食材。</li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+    
+    <div class="col-lg-8">
+        <div class="glass-form">
+            <h3 class="mb-4 text-gradient fw-bold">👩‍🍳 跟著做！烹飪步驟</h3>
+            {% for step in recipe.steps %}
+            <div class="step-card">
+                <span class="step-number">{{ step.step_number }}</span>
+                <p class="fs-4 mb-3 text-white lh-base">{{ step.description }}</p>
+                {% if step.image_path %}
+                <div class="mt-3">
+                    <img src="{{ url_for('static', filename='uploads/' ~ step.image_path) }}" class="img-fluid rounded shadow" alt="步驟 {{ step.step_number }}" style="max-height: 300px; object-fit: cover; width: 100%; border: 1px solid rgba(255,255,255,0.1);">
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            {% if not recipe.steps %}
+                <div class="text-muted fs-5 text-center mt-5">本食譜沒有登錄詳細步驟。</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
