@@ -1,124 +1,106 @@
-from .db import get_db
 import sqlite3
+import os
 
-class Recipe:
+# 自動定位 instance 資料夾下的 database.db
+DB_PATH = os.path.join(os.path.dirname(__file__), '..', '..', 'instance', 'database.db')
+
+def get_db_connection():
+    # 確保 instance 資料夾存在
+    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+    conn = sqlite3.connect(DB_PATH)
+    # 讓 SELECT 回傳的資料可以用 dict 的方式取值
+    conn.row_factory = sqlite3.Row
+    return conn
+
+class RecipeModel:
     @staticmethod
-    def create(data):
+    def create(title, image_path, prep_time, category, ingredients_data, steps_data):
         """
-        新增一筆食譜記錄。
-        參數:
-            data (dict): 包含 title, description, instructions
-        回傳:
-            int: 新增食譜的 id，若發生例外則回傳 None
+        新增食譜與其對應的材料、步驟
+        ingredients_data: [{'name': '...', 'amount': '...'}, ...]
+        steps_data: [{'step_number': 1, 'description': '...', 'image_path': '...'}, ...]
         """
-        conn = None
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
         try:
-            conn = get_db()
-            cursor = conn.cursor()
-            cursor.execute(
-                "INSERT INTO recipes (title, description, instructions) VALUES (?, ?, ?)",
-                (data.get('title'), data.get('description'), data.get('instructions'))
-            )
+            # 1. 寫入 recipes 表格
+            cursor.execute('''
+                INSERT INTO recipes (title, image_path, prep_time, category)
+                VALUES (?, ?, ?, ?)
+            ''', (title, image_path, prep_time, category))
+            
+            recipe_id = cursor.lastrowid
+            
+            # 2. 寫入 ingredients 表格
+            for ing in ingredients_data:
+                cursor.execute('''
+                    INSERT INTO ingredients (recipe_id, name, amount)
+                    VALUES (?, ?, ?)
+                ''', (recipe_id, ing['name'], ing['amount']))
+                
+            # 3. 寫入 steps 表格
+            for step in steps_data:
+                cursor.execute('''
+                    INSERT INTO steps (recipe_id, step_number, description, image_path)
+                    VALUES (?, ?, ?, ?)
+                ''', (recipe_id, step['step_number'], step['description'], step.get('image_path')))
+                
             conn.commit()
-            last_id = cursor.lastrowid
-            return last_id
-        except sqlite3.Error as e:
-            print(f"Error creating recipe: {e}")
+            return recipe_id
+        except Exception as e:
+            conn.rollback() # 發生錯誤則還原交易
+            raise e
+        finally:
+            conn.close()
+
+    @staticmethod
+    def get_all(category=None):
+        """取得所有食譜，支援以分類標籤篩選"""
+        conn = get_db_connection()
+        if category:
+            recipes = conn.execute('SELECT * FROM recipes WHERE category = ? ORDER BY created_at DESC', (category,)).fetchall()
+        else:
+            recipes = conn.execute('SELECT * FROM recipes ORDER BY created_at DESC').fetchall()
+        conn.close()
+        return [dict(r) for r in recipes]
+
+    @staticmethod
+    def get_by_id(recipe_id):
+        """根據 ID 取得單一食譜及其材料與步驟"""
+        conn = get_db_connection()
+        recipe = conn.execute('SELECT * FROM recipes WHERE id = ?', (recipe_id,)).fetchone()
+        if not recipe:
+            conn.close()
             return None
-        finally:
-            if conn:
-                conn.close()
+            
+        ingredients = conn.execute('SELECT * FROM ingredients WHERE recipe_id = ?', (recipe_id,)).fetchall()
+        steps = conn.execute('SELECT * FROM steps WHERE recipe_id = ? ORDER BY step_number ASC', (recipe_id,)).fetchall()
+        conn.close()
+        
+        result = dict(recipe)
+        result['ingredients'] = [dict(i) for i in ingredients]
+        result['steps'] = [dict(s) for s in steps]
+        return result
 
     @staticmethod
-    def get_all():
-        """
-        取得所有記錄。
-        回傳:
-            list: 包含字典形式結果的清單，一筆對應一個食譜
-        """
-        conn = None
-        try:
-            conn = get_db()
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM recipes ORDER BY created_at DESC")
-            rows = cursor.fetchall()
-            return [dict(row) for row in rows]
-        except sqlite3.Error as e:
-            print(f"Error getting all recipes: {e}")
-            return []
-        finally:
-            if conn:
-                conn.close()
+    def update(recipe_id, title, image_path, prep_time, category):
+        """更新食譜基本資訊"""
+        conn = get_db_connection()
+        conn.execute('''
+            UPDATE recipes
+            SET title = ?, image_path = ?, prep_time = ?, category = ?
+            WHERE id = ?
+        ''', (title, image_path, prep_time, category, recipe_id))
+        conn.commit()
+        conn.close()
 
     @staticmethod
-    def get_by_id(id):
-        """
-        取得單筆記錄。
-        參數:
-            id (int): 指定的食譜 ID
-        回傳:
-            dict: 若找得到則回傳單筆記錄的字典，否則為 None
-        """
-        conn = None
-        try:
-            conn = get_db()
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM recipes WHERE id = ?", (id,))
-            row = cursor.fetchone()
-            return dict(row) if row else None
-        except sqlite3.Error as e:
-            print(f"Error getting recipe by id: {e}")
-            return None
-        finally:
-            if conn:
-                conn.close()
-
-    @staticmethod
-    def update(id, data):
-        """
-        更新記錄。
-        參數:
-            id (int): 指定的食譜 ID
-            data (dict): 包含 title, description, instructions 欲更新之資料
-        回傳:
-            bool: 更新成功與否
-        """
-        conn = None
-        try:
-            conn = get_db()
-            cursor = conn.cursor()
-            cursor.execute(
-                "UPDATE recipes SET title = ?, description = ?, instructions = ? WHERE id = ?",
-                (data.get('title'), data.get('description'), data.get('instructions'), id)
-            )
-            conn.commit()
-            return True
-        except sqlite3.Error as e:
-            print(f"Error updating recipe: {e}")
-            return False
-        finally:
-            if conn:
-                conn.close()
-
-    @staticmethod
-    def delete(id):
-        """
-        刪除記錄。
-        參數:
-            id (int): 指定的食譜 ID
-        回傳:
-            bool: 刪除成功與否
-        """
-        conn = None
-        try:
-            conn = get_db()
-            cursor = conn.cursor()
-            cursor.execute("DELETE FROM recipes WHERE id = ?", (id,))
-            conn.commit()
-            return True
-        except sqlite3.Error as e:
-            print(f"Error deleting recipe: {e}")
-            return False
-        finally:
-            if conn:
-                conn.close()
+    def delete(recipe_id):
+        """刪除食譜（關聯的材料與步驟將會因為 ON DELETE CASCADE 自動被刪除）"""
+        conn = get_db_connection()
+        # 需開啟 foreign_keys 支持 CASCADE 刪除
+        conn.execute("PRAGMA foreign_keys = ON")
+        conn.execute('DELETE FROM recipes WHERE id = ?', (recipe_id,))
+        conn.commit()
+        conn.close()

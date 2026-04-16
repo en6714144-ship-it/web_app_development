@@ -1,66 +1,61 @@
-# 資料庫設計文件 (DB Design)
+# 資料庫設計文件 - 智慧食譜管理系統
 
-這份文件描述了食譜管理系統的資料表結構與關聯，並針對 SQLite 提供了完整的 Schema 定義。
+本文件基於 PRD 與 FLOWCHART 產出，定義了系統後端 SQLite 資料庫的各項表結構設計與關聯。
 
-## 1. ER 圖（實體關係圖）
-
-本系統實體包含：食譜 (Recipe)、食材 (Ingredient)、標籤 (Tag)。
-- 一篇食譜可以有多個食材 (一對多)
-- 一篇食譜可以有多個標籤，一個標籤可以標示多篇食譜 (多對多，透過 RecipeTag 關聯)
+## 1. ER 圖 (實體關係圖)
 
 ```mermaid
 erDiagram
-  RECIPE {
-    int id PK
-    string title
-    string description
-    string instructions
-    datetime created_at
-  }
-  INGREDIENT {
-    int id PK
-    int recipe_id FK
-    string name
-    string quantity
-  }
-  TAG {
-    int id PK
-    string name
-  }
-  RECIPE_TAG {
-    int recipe_id PK, FK
-    int tag_id PK, FK
-  }
+    RECIPE ||--o{ INGREDIENT : "包含"
+    RECIPE ||--o{ STEP : "包含"
 
-  RECIPE ||--o{ INGREDIENT : "包含"
-  RECIPE ||--o{ RECIPE_TAG : "擁有"
-  TAG ||--o{ RECIPE_TAG : "標示於"
+    RECIPE {
+        integer id PK
+        string title
+        string image_path
+        integer prep_time
+        string category
+        datetime created_at
+    }
+
+    INGREDIENT {
+        integer id PK
+        integer recipe_id FK
+        string name
+        string amount
+    }
+
+    STEP {
+        integer id PK
+        integer recipe_id FK
+        integer step_number
+        string description
+        string image_path
+    }
 ```
 
 ## 2. 資料表詳細說明
 
-### 2.1 `recipes` (食譜表)
-核心資料表，儲存食譜的主要資訊。
-- `id` (INTEGER): Primary Key，自動遞增。
-- `title` (TEXT): 食譜名稱 (必填)。
-- `description` (TEXT): 食譜簡介或簡短描述。
-- `instructions` (TEXT): 完整烹飪步驟說明。
+### RECIPE (食譜主表)
+儲存食譜的基本通用資訊。
+- `id` (INTEGER): 主鍵，自動遞增。
+- `title` (TEXT): 食譜名稱（必填）。
+- `image_path` (TEXT): 食譜預覽圖的路徑（非必填）。
+- `prep_time` (INTEGER): 預估烹飪時間，單位通常為分鐘（必填）。
+- `category` (TEXT): 食譜分類標籤，如中式、西式或甜點（必填）。
 - `created_at` (DATETIME): 建立時間，預設為當下時間。
 
-### 2.2 `ingredients` (食材表)
-紀錄某個食譜所需準備的所有食材及份量。
-- `id` (INTEGER): Primary Key，自動遞增。
-- `recipe_id` (INTEGER): Foreign Key，對應到 `recipes.id` (必填)。
-- `name` (TEXT): 食材名稱，例如「去骨雞腿肉」(必填)。
-- `quantity` (TEXT): 食材份量，例如「300g」或「兩大匙」。
+### INGREDIENT (食材清單表)
+儲存特定食譜需要的每一項食材。
+- `id` (INTEGER): 主鍵，自動遞增。
+- `recipe_id` (INTEGER): 外鍵，關聯至 RECIPE 的 id。
+- `name` (TEXT): 食材名稱，如「豬肉」（必填）。
+- `amount` (TEXT): 份量與單位，如「250g」或「一大匙」（必填）。
 
-### 2.3 `tags` (標籤表)
-用來將食譜分類用的標籤，例如「全素」、「低卡」、「前菜」。
-- `id` (INTEGER): Primary Key，自動遞增。
-- `name` (TEXT): 標籤名稱 (必填且唯一)。
-
-### 2.4 `recipe_tags` (食譜與標籤關聯表)
-處理食譜與標籤之間的多對多關係。
-- `recipe_id` (INTEGER): Foreign Key，對應到 `recipes.id`。
-- `tag_id` (INTEGER): Foreign Key，對應到 `tags.id`。
-- *(兩者組成複合 Primary Key)*
+### STEP (烹飪步驟表)
+儲存特定食譜的教學順序與各步驟內容。
+- `id` (INTEGER): 主鍵，自動遞增。
+- `recipe_id` (INTEGER): 外鍵，關聯至 RECIPE 的 id。
+- `step_number` (INTEGER): 步驟順序位數，如 1, 2, 3（必填）。
+- `description` (TEXT): 做法文字說明（必填）。
+- `image_path` (TEXT): 單一步驟的對應圖片路徑（非必填）。

@@ -1,8 +1,9 @@
 CREATE TABLE IF NOT EXISTS recipes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
-    description TEXT,
-    instructions TEXT,
+    image_path TEXT,
+    prep_time INTEGER NOT NULL,
+    category TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -10,19 +11,15 @@ CREATE TABLE IF NOT EXISTS ingredients (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     recipe_id INTEGER NOT NULL,
     name TEXT NOT NULL,
-    quantity TEXT,
-    FOREIGN KEY(recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
+    amount TEXT NOT NULL,
+    FOREIGN KEY (recipe_id) REFERENCES recipes (id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS tags (
+CREATE TABLE IF NOT EXISTS steps (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL UNIQUE
-);
-
-CREATE TABLE IF NOT EXISTS recipe_tags (
     recipe_id INTEGER NOT NULL,
-    tag_id INTEGER NOT NULL,
-    PRIMARY KEY (recipe_id, tag_id),
-    FOREIGN KEY(recipe_id) REFERENCES recipes(id) ON DELETE CASCADE,
-    FOREIGN KEY(tag_id) REFERENCES tags(id) ON DELETE CASCADE
+    step_number INTEGER NOT NULL,
+    description TEXT NOT NULL,
+    image_path TEXT,
+    FOREIGN KEY (recipe_id) REFERENCES recipes (id) ON DELETE CASCADE
 );
