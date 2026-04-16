@@ -1,84 +1,104 @@
-# 系統架構設計文件：食譜管理系統
+# 系統架構文件 - 智慧食譜管理系統
+
+這份文件基於產品需求文件 (PRD) ，規劃與說明「智慧食譜管理系統」的整體技術架構與資料夾結構。
 
 ## 1. 技術架構說明
 
-本專案採用輕量級的 Python 網頁框架設計，不採用前後端分離，由後端直接渲染 HTML 頁面返回給使用者的瀏覽器。
+本專案採用經典的伺服器渲染 (Server-Side Rendering) 架構，不區分前後端分離，藉此加速初期開發並降低複雜度。
 
 ### 選用技術與原因
 - **後端框架：Python + Flask**
-  - **原因**：Flask 相較於 Django 更為輕量與彈性，非常適合用來開發這類中小型內容管理系統。其學習曲線平緩且易於快速打造原型。
+  - **原因**：Flask 是輕量級、易於上手的微框架，十分適合開發這類功能單純但五臟俱全的食譜系統。
 - **模板引擎：Jinja2**
-  - **原因**：與 Flask 高度整合，能直接將後端資料無縫嵌入前端 HTML 中，有效降低開發複雜度，並且內建自動轉義防護 XSS 攻擊。
+  - **原因**：Flask 內建支援 Jinja2，能直接在 HTML 裡面崁入 Python 邏輯（如迴圈列印食譜步驟、條件判斷），快速完成頁面渲染。
 - **資料庫：SQLite**
-  - **原因**：不需額外安裝資料庫伺服器，資料儲存在單一檔案中，易於備份與部署，完全符合 MVP (最小可行性產品) 與個人使用的效能需求。
+  - **原因**：SQLite 是一套無伺服器 (serverless) 的輕量級資料庫，所有的資料儲存在單一檔案中，無需額外安裝或設定資料庫引擎，非常適合處理食譜管理與步驟這類結構化的資料。
 
 ### Flask MVC 模式說明
-雖然 Flask 本身不強制要求 MVC 架構，但我們將依循 MVC (Model-View-Controller) 的概念來組織程式碼：
-- **Model (模型)**：負責與 SQLite 資料庫溝通，定義「食譜 (Recipe)」、「標籤 (Tag)」等資料結構與操作。
-- **View (視圖)**：由 Jinja2 模板擔任，負責產生最終的 HTML 介面，呈現資料給使用者。
-- **Controller (控制器)**：由 Flask 的路由 (Routes) 擔任，負責接收使用者請求、調用 Model 獲取或更新資料、接著把資料傳遞給 View 進行渲染。
+專案將依循類似 MVC (Model-View-Controller) 的設計模式：
+- **Model (模型)**：負責定義資料庫的結構，以及如何跟 SQLite 資料庫互動（儲存或讀取食譜、食材與步驟資料）。
+- **View (視圖)**：Jinja2 模板與 CSS 樣式，負責將 Controller 取回的資料組裝成 HTML 頁面，呈現給使用者。
+- **Controller (控制器/路由)**：Flask 的 `routes` 負責接收瀏覽器傳來的請求（如點擊分類、新增食譜），呼叫對應的 Model 修改資料，最後把結果交給 View (Jinja2) 去渲染成網頁。
 
 ## 2. 專案資料夾結構
 
-以下是本專案的資料夾結構與各階層職責說明：
+以下為系統資料夾與檔案結構，遵循職責分離原則以便未來擴充維護：
 
 ```text
 web_app_development/
-├── app/                  # 應用程式主目錄
-│   ├── __init__.py       # 初始化 Flask 應用程式與套件配置
-│   ├── models/           # (Model) 資料庫模型定義與操作
-│   │   └── recipe.py     # 食譜相關的資料庫邏輯
-│   ├── routes/           # (Controller) Flask 路由處理邏輯
+├── app/
+│   ├── models/            ← 資料庫模型的定義目錄
 │   │   ├── __init__.py
-│   │   └── recipe.py     # 處理食譜的增刪改查與搜尋推薦路由
-│   ├── templates/        # (View) Jinja2 HTML 頁面模板
-│   │   ├── base.html     # 共用版型 (標題、導覽列)
-│   │   └── recipes/      # 食譜相關頁面
-│   │       ├── index.html   # 食譜列表/首頁
-│   │       ├── show.html    # 食譜明細頁面
-│   │       └── form.html    # 新增與編輯表單
-│   └── static/           # css, js, 圖片等靜態資源
+│   │   └── recipe.py      ← 食譜、食材清單、步驟的儲存邏輯
+│   ├── routes/            ← 負責處理網址路由的目錄（Controller）
+│   │   ├── __init__.py
+│   │   ├── index.py       ← 首頁與食譜列表路由
+│   │   └── recipe.py      ← 新增、查看、編輯食譜的專屬路由
+│   ├── templates/         ← Jinja2 HTML 頁面模版（View）
+│   │   ├── base.html      ← 網站共用主版面 (包含 NavBar 等)
+│   │   ├── index.html     ← 首頁（食譜網格、分類過濾）
+│   │   ├── detail.html    ← 食譜詳細頁（食材與步驟）
+│   │   └── create.html    ← 新增食譜的表單頁面
+│   └── static/            ← 網站的靜態資源
 │       ├── css/
-│       │   └── style.css
-│       └── images/       # 存放使用者預設圖片等
-├── instance/             # 存放敏感或變動性的本地端資料
-│   └── database.db       # SQLite 資料庫檔案
-├── docs/                 # 專案文件
-│   ├── PRD.md            # 產品需求文件
-│   └── ARCHITECTURE.md   # 系統架構文件
-├── requirements.txt      # Python 依賴套件清單
-└── app.py                # 應用程式啟動入口
+│       │   └── style.css  ← 網站共用主要樣式與佈局
+│       ├── js/            ← 必要的互動腳本
+│       └── uploads/       ← 使用者上傳的食譜首圖與步驟圖
+├── instance/              ← 存放敏感資訊或本地狀態的資料夾（不會進入 Git 版本控制）
+│   └── database.db        ← SQLite 資料庫本體檔案
+├── docs/                  ← 專案技術與需求設計文件
+│   ├── PRD.md             ← 產品需求文件
+│   └── ARCHITECTURE.md    ← 本系統架構文件
+├── app.py                 ← 程式執行入口與 Flask 初始化設定
+└── requirements.txt       ← Python 相依套件清單
 ```
 
 ## 3. 元件關係圖
 
-以下展示使用者與系統互動時，各元件如何協作產生回應：
+透過以下的流程圖可以了解使用者、瀏覽器、Flask 與資料庫的互動方式：
 
 ```mermaid
 sequenceDiagram
-    participant Browser as 瀏覽器 (使用者)
-    participant Route as Flask Route (Controller)
-    participant Model as Model (資料操作)
-    participant DB as SQLite 資料庫
-    participant Template as Jinja2 Template (View)
+    participant User as 使用者 (User)
+    participant Browser as 瀏覽器 (Browser)
+    participant Flask Route as 路由 (Flask Route)
+    participant Model as 模型 (Model)
+    participant SQLite as 資料庫 (SQLite)
+    participant Jinja2 as 模板 (Jinja2 Template)
 
-    Browser->>Route: 1. 發送 HTTP 請求 (例如：搜尋食譜)
-    Route->>Model: 2. 呼叫邏輯獲取資料
-    Model->>DB: 3. 執行 SQL 查詢
-    DB-->>Model: 4. 回傳查詢結果
-    Model-->>Route: 5. 回傳 Python 結構化資料
-    Route->>Template: 6. 將資料傳入模板渲染
-    Template-->>Route: 7. 產生最終 HTML 字串
-    Route-->>Browser: 8. 回傳 HTTP 回應 (顯示網頁)
+    %%情境1：瀏覽首頁（讀取資料）
+    User->>Browser: 點擊或輸入網址瀏覽首頁
+    Browser->>Flask Route: 發送 HTTP GET 請求 (/)
+    Flask Route->>Model: 查詢所有食譜與預覽圖
+    Model->>SQLite: 執行 SQL SELECT
+    SQLite-->>Model: 回傳食譜資料
+    Model-->>Flask Route: 整理成 Python 列表或字典
+    Flask Route->>Jinja2: 傳遞資料並渲染 index.html
+    Jinja2-->>Flask Route: 產生純 HTML 碼
+    Flask Route-->>Browser: 回應 HTML 頁面
+    Browser-->>User: 顯示網頁介面
+
+    %%情境2：新增食譜（寫入資料）
+    User->>Browser: 填寫資料並附上照片，提交表單
+    Browser->>Flask Route: 發送 HTTP POST 請求 (/create)
+    Flask Route->>Model: 解析表單與處理照片路徑，呼叫修改函式
+    Model->>SQLite: 執行 SQL INSERT (寫入資料庫)
+    SQLite-->>Model: 確認寫入成功
+    Model-->>Flask Route: 回傳新增結果
+    Flask Route-->>Browser: Redirect (重導向) 回首頁
+    Browser-->>User: 顯示最新內容
 ```
 
 ## 4. 關鍵設計決策
 
-1. **採用 SSR (伺服器端渲染) 而非 SPA (單頁應用)**
-   - 作為初期 MVP 專案，使用 Flask + Jinja2 直接渲染頁面是最快看到成果的方式，避免了繁瑣的 API 介接與跨域問題，能讓重點集中於食譜核心邏輯。
-2. **採用 SQLite 單一檔案資料庫**
-   - 避免引入如 MySQL 或 PostgreSQL 帶來額外的效能與維護成本，SQLite 非常輕量且零設定，對於主要是單人使用的儲存與搜尋已綽綽有餘。
-3. **Model 與 Controller 邏輯分離**
-   - 雖然初期專案較小，但不把所有的資料庫存取層直接寫在 `app.py` 或具體的 route 中。將資料庫層抽象出 `app/models/`，能確保留下擴展「食譜標籤系統」與「食材推薦演算法」的彈性空間。
-4. **使用模板繼承機制 (共用 Base)**
-   - 透過 `base.html` 共用 Header、導覽列及自訂的 CSS 資源。日後不論是新增編輯頁面還是推薦食譜頁面，只需專注頁面本體，可達到最好的維護性並維持設計的一致感。
+1. **目錄結構分離以提高可維護性**
+   採用 `routes/`、`models/` 與 `templates/` 分離的設計。這能確保路由處理邏輯不會跟資料庫操作混淆在一起，未來擴充功能時能更容易管理。
+ 
+2. **圖片一律存在本地端專屬目錄資料夾 (`static/uploads/`)**
+   食譜預覽圖與每個步驟可能具備的圖片都會先存進本地端，並在資料庫內僅記錄「檔案路徑」。這能避免資料庫因存放二進位檔案過於肥大、讀取變慢。
+
+3. **統一不使用前後端分離 (Single App 模式)**
+   系統主要操作在於內容的 CRUD（新增、讀取、修改、刪除），對即時非同步更新的要求較低。採用 Flask + Jinja2 結合傳統表單提交來處理，可以省去大量前端 API 調用的處理時間。
+
+4. **主從資料表設計**
+   因應「分開材料清單」和「分步驟引導」，我們在後續資料庫設計上會將食譜(Recipe)與食材(Ingredient)、步驟(Step)分離成獨立的資料表以 1-to-N 關聯起來，確保資料結構清晰且好增加與調整。
